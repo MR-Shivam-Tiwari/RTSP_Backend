@@ -16,14 +16,22 @@ router.post('/', async (req, res) => {
 
 // Get overlays by video URL
 router.get('/', async (req, res) => {
-    const { videoUrl } = req.query;
+    const { videoUrl, page = 1, limit = 10 } = req.query; // Default page 1 and limit 10
+    const start = Date.now();  // Start timer
+
     try {
-        const overlays = await Overlay.find({ videoUrl: videoUrl });
+        const overlays = await Overlay.find({ videoUrl: videoUrl })
+            .skip((page - 1) * limit)
+            .limit(parseInt(limit));
+        
+        console.log('Fetched overlays in:', Date.now() - start, 'ms'); // Log time taken
         res.json(overlays);
     } catch (error) {
+        console.error('Error fetching overlays:', error.message); // Log any errors
         res.status(500).json({ message: error.message });
     }
 });
+
 
 // Update an overlay
 router.put('/:id', async (req, res) => {
